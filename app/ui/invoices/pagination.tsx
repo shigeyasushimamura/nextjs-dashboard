@@ -113,6 +113,14 @@ function PaginationArrow({
     }
   );
 
+  const className2 = clsx([
+    "flex h-10 w-10 items-center justify-center rounded-md border",
+    isDisabled && "pointer-events-none text-gray-300",
+    !isDisabled && "hover:bg-gray-100",
+    direction === "left" && "mr-2 md:mr-4",
+    direction === "right" && "ml-2 md:ml-4",
+  ]);
+
   const icon =
     direction === "left" ? (
       <ArrowLeftIcon className="w-4" />
@@ -121,9 +129,9 @@ function PaginationArrow({
     );
 
   return isDisabled ? (
-    <div className={className}>{icon}</div>
+    <div className={className2}>{icon}</div>
   ) : (
-    <Link className={className} href={href}>
+    <Link className={className2} href={href}>
       {icon}
     </Link>
   );
