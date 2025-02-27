@@ -1,10 +1,11 @@
 "use server";
 import { z } from "zod";
-import postgres from "postgres";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
+import { CreateInvoiceService } from "@/app/lib/invoice/application/services/InvoiceService";
+import { PostgresInvoiceRepository } from "@/app/lib/invoice/infrastructures/repositories/InvoiceRepository";
+import { sql } from "@/app/lib/shared/db";
+import { CreateInvoiceCommand } from "@/app/lib/invoice/application/commands/CreateInvoiceCommands";
 
 const FormSchema = z.object({
   id: z.string(),
@@ -22,15 +23,12 @@ export async function createInvoice(formData: FormData) {
     amount: formData.get("amount"),
     status: formData.get("status"),
   });
-  // store monetary values in cents in database
-  const amountInCents = amount * 100;
-  // 世界標準時
-  const date = new Date().toISOString().split("T")[0];
 
-  await sql`
-  INSERT INTO invoices (customer_id, amount, status, date)
-  VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-`;
+  const repository = new PostgresInvoiceRepository(sql);
+  const cmd = new CreateInvoiceCommand(customerId, amount, status);
+  const service = new CreateInvoiceService(repository, cmd);
+
+  await service.execute();
 
   revalidatePath("/dashboard/invoices");
   redirect("/dashboard/invoices");
