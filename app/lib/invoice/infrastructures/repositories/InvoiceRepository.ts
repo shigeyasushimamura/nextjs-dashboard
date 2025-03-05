@@ -17,4 +17,31 @@ export class PostgresInvoiceRepository implements IInvoiceRepository {
       throw new Error("Failed to insert invoice");
     }
   }
+
+  async update(
+    id: string,
+    customerId: string,
+    amount: number,
+    status: string
+  ): Promise<void> {
+    try {
+      await this.sql`
+        UPDATE invoices
+        SET customer_id = ${customerId}, amount = ${amount}, 
+        status = ${status} where id = ${id}
+      `;
+    } catch (error) {
+      throw new Error("Failed to update invoice");
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      await this.sql`
+      DELETE FROM invoices WHERE id=${id}
+      `;
+    } catch (error) {
+      throw new Error("Failed to delete invoice");
+    }
+  }
 }
